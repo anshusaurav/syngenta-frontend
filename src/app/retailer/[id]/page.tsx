@@ -6,6 +6,7 @@ import { getRetailer, getNextBestAction, logOutcome, RetailerDetail, NextBestAct
 import { MapPin, Package, TrendingUp, ChevronLeft, Sparkles, CheckCircle } from 'lucide-react';
 import Link from 'next/link';
 import ProviderToggle from '@/components/ProviderToggle';
+import RFRecommendationCard from '@/components/RFRecommendationCard';
 
 export default function RetailerDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -135,6 +136,9 @@ export default function RetailerDetailPage() {
           </div>
         </div>
       )}
+
+      {/* ML Model Recommendation */}
+      <RFRecommendationCard retailerId={id} />
 
       {/* AI Recommendation */}
       <div className="bg-green-50 border border-green-200 rounded-lg p-4">

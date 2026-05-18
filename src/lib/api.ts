@@ -96,6 +96,14 @@ export interface NextBestAction {
 
 export type AIProvider = 'claude' | 'gemini';
 
+export interface RFRecommendation {
+  product_recommended: string;
+  confidence: number;
+  reasoning: string;
+  model_trained_on: number;
+  trained_at: string | null;
+}
+
 // ─── API calls ────────────────────────────────────────────────────────────────
 
 export const getReps = () =>
@@ -144,6 +152,9 @@ export const logOutcome = (payload: {
 
 export const getOutcomes = (repId: string) =>
   api.get<{ total: number; acceptance_rate: number; outcomes: any[] }>('/api/outcomes', { params: { repId } }).then(r => r.data);
+
+export const getRFRecommendation = (retailerId: string) =>
+  api.post<RFRecommendation & { success: boolean }>('/api/rf-recommendation', { retailerId }).then(r => r.data);
 
 export const getWeather = (district: string) =>
   api.get<{ success: boolean; weather: WeatherSummary }>('/api/weather', { params: { district } }).then(r => r.data.weather);
