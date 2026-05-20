@@ -5,7 +5,14 @@ import { Globe, Check } from 'lucide-react';
 import { useLocale } from '@/lib/i18n/LocaleProvider';
 import { LOCALES, LOCALE_LABELS, LOCALE_CODE_LABELS } from '@/lib/i18n/types';
 
-export default function LanguagePicker() {
+interface Props {
+  /** "on-dark" = white-ish text for the green navbar; "on-light" = dark
+      slate text for the floating pill on the landing page. Default is light
+      so the picker stays readable wherever it lands. */
+  variant?: 'on-dark' | 'on-light';
+}
+
+export default function LanguagePicker({ variant = 'on-light' }: Props) {
   const { locale, setLocale, hasOverride, t } = useLocale();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -19,6 +26,11 @@ export default function LanguagePicker() {
     return () => document.removeEventListener('mousedown', onDown);
   }, [open]);
 
+  const buttonClass =
+    variant === 'on-dark'
+      ? 'text-white hover:bg-white/15'
+      : 'text-gray-700 hover:bg-gray-100';
+
   return (
     <div ref={ref} className="relative">
       <button
@@ -26,9 +38,9 @@ export default function LanguagePicker() {
         onClick={() => setOpen(o => !o)}
         aria-haspopup="listbox"
         aria-expanded={open}
-        className="flex items-center gap-1.5 px-2.5 py-1.5 rounded text-xs font-medium text-green-100 hover:bg-green-700"
+        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-semibold transition-colors ${buttonClass}`}
       >
-        <Globe size={14} />
+        <Globe size={15} />
         <span>{LOCALE_CODE_LABELS[locale]}</span>
       </button>
       {open && (

@@ -57,7 +57,7 @@ export default function Navbar() {
               <span>{t(labelKey)}</span>
             </Link>
           ))}
-          <LanguagePicker />
+          <LanguagePicker variant="on-dark" />
         </div>
       </div>
     </nav>
