@@ -211,10 +211,10 @@ const en = {
     label: 'AI provider',
   },
   rfCard: {
-    predicting: 'ML model predicting…',
-    errorPrefix: 'ML model:',
-    header: 'ML Model Recommendation',
-    visitsTrained: '{n} visits trained',
+    predicting: 'Finding the best match…',
+    errorPrefix: 'Suggestion unavailable:',
+    header: 'Suggested Product',
+    visitsTrained: 'trained on {n} visits',
     confidence: '{pct}% confidence',
   },
   velocityChart: {

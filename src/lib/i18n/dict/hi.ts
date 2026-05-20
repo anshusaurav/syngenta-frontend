@@ -213,9 +213,9 @@ const hi: Dict = {
     label: 'AI प्रोवाइडर',
   },
   rfCard: {
-    predicting: 'ML मॉडल पूर्वानुमान लगा रहा है…',
-    errorPrefix: 'ML मॉडल:',
-    header: 'ML मॉडल सिफारिश',
+    predicting: 'सबसे अच्छा मिलान खोजा जा रहा है…',
+    errorPrefix: 'सुझाव उपलब्ध नहीं:',
+    header: 'सुझाया गया उत्पाद',
     visitsTrained: '{n} विज़िट पर प्रशिक्षित',
     confidence: '{pct}% विश्वास',
   },

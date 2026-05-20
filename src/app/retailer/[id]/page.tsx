@@ -208,12 +208,6 @@ export default function RetailerDetailPage() {
               [&_hr]:border-green-200 [&_hr]:my-3">
               <ReactMarkdown>{advice.advice}</ReactMarkdown>
             </div>
-            <button
-              onClick={fetchAdvice}
-              className="mt-3 text-xs text-green-600 underline"
-            >
-              {t('retailer.aiAdviceRegenerate')}
-            </button>
           </div>
         )}
       </div>
