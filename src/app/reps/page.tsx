@@ -1,11 +1,41 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getReps, Rep } from '@/lib/api';
-import { MapPin, ChevronRight } from 'lucide-react';
+import { MapPin, ChevronRight, Search, Users } from 'lucide-react';
 import { useLocale } from '@/lib/i18n/LocaleProvider';
 import { useSelectedRep } from '@/lib/useSelectedRep';
+
+// ─── Helpers ─────────────────────────────────────────────────────────
+
+// "kalaburagi_west_019" → "Kalaburagi West 019"
+function prettifyTerritoryName(s: string | undefined): string {
+  if (!s) return '';
+  return s
+    .replace(/[_-]+/g, ' ')
+    .replace(/\b\w/g, c => c.toUpperCase());
+}
+
+// "REP_0019" → "19"
+function initials(repId: string): string {
+  const m = repId.match(/(\d{1,4})$/);
+  return m ? String(parseInt(m[1], 10)) : repId.slice(-2);
+}
+
+// Deterministic colour for a state — picks a soft HSL bg + matching text.
+function stateColor(state: string | undefined): { bg: string; text: string; ring: string } {
+  if (!state) return { bg: '#e5e7eb', text: '#374151', ring: 'rgba(107,114,128,0.25)' };
+  let h = 0;
+  for (let i = 0; i < state.length; i++) h = (h * 31 + state.charCodeAt(i)) % 360;
+  return {
+    bg:   `hsl(${h}, 55%, 92%)`,
+    text: `hsl(${h}, 45%, 28%)`,
+    ring: `hsla(${h}, 50%, 50%, 0.25)`,
+  };
+}
+
+// ─── Page ────────────────────────────────────────────────────────────
 
 export default function RepsPage() {
   const { t } = useLocale();
@@ -15,66 +45,156 @@ export default function RepsPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
 
+  useEffect(() => {
+    getReps().then(d => setReps(d.reps ?? [])).finally(() => setLoading(false));
+  }, []);
+
   const handlePick = (rep: Rep) => {
     setRep(rep.rep_id, rep.territory_id);
     router.push('/dashboard');
   };
 
-  useEffect(() => {
-    getReps().then(d => setReps(d.reps)).finally(() => setLoading(false));
-  }, []);
-
-  const filtered = reps.filter(r =>
-    r.rep_id.toLowerCase().includes(search.toLowerCase()) ||
-    r.territory_name?.toLowerCase().includes(search.toLowerCase()) ||
-    r.state?.toLowerCase().includes(search.toLowerCase())
-  );
+  // Filter + group by state
+  const { totalShown, byState } = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    const filtered = reps.filter(r => {
+      if (!q) return true;
+      return (
+        r.rep_id.toLowerCase().includes(q) ||
+        r.territory_name?.toLowerCase().includes(q) ||
+        r.state?.toLowerCase().includes(q) ||
+        r.district?.toLowerCase().includes(q)
+      );
+    });
+    const map = new Map<string, Rep[]>();
+    for (const r of filtered) {
+      const key = r.state || '—';
+      if (!map.has(key)) map.set(key, []);
+      map.get(key)!.push(r);
+    }
+    const groups = Array.from(map.entries())
+      .map(([state, reps]) => ({ state, reps: reps.slice(0, 24) /* cap per state */ }))
+      .sort((a, b) => a.state.localeCompare(b.state));
+    return { totalShown: filtered.length, byState: groups };
+  }, [reps, search]);
 
   return (
-    <div className="page-shell space-y-4">
-      <div>
-        <h1 className="text-xl font-bold text-gray-800">{t('reps.title')}</h1>
-        <p className="text-sm text-gray-500">{t('reps.countLine', { count: reps.length })}</p>
+    <div className="page-shell space-y-5">
+      {/* Header */}
+      <div className="flex items-end justify-between gap-3">
+        <div>
+          <h1 className="font-display text-2xl font-bold tracking-tight text-gray-900">
+            {t('reps.title')}
+          </h1>
+          <p className="text-sm text-gray-500 mt-0.5">
+            {t('reps.countLine', { count: reps.length })}
+          </p>
+        </div>
       </div>
 
-      <input
-        placeholder={t('reps.searchPlaceholder')}
-        value={search}
-        onChange={e => setSearch(e.target.value)}
-        className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-green-400"
-      />
+      {/* Search */}
+      <div className="relative">
+        <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+        <input
+          placeholder={t('reps.searchPlaceholder')}
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          className="w-full bg-white border border-gray-200 rounded-xl pl-9 pr-3 py-2.5 text-sm shadow-sm focus:outline-none focus:border-green-400 focus:ring-2 focus:ring-green-100 transition-all"
+        />
+      </div>
 
-      {loading ? (
-        <div className="space-y-2">
-          {[1,2,3,4,5].map(i => <div key={i} className="h-16 bg-gray-200 rounded-lg animate-pulse" />)}
+      {/* Loading */}
+      {loading && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          {[1, 2, 3, 4, 5, 6].map(i => (
+            <div key={i} className="h-20 bg-gray-200 rounded-xl animate-pulse" />
+          ))}
         </div>
-      ) : (
-        <div className="space-y-2">
-          {filtered.slice(0, 50).map(rep => {
-            const isCurrent = rep.rep_id === currentRepId;
-            return (
-              <button
-                key={rep.rep_id}
-                onClick={() => handlePick(rep)}
-                className={`w-full text-left flex items-center justify-between bg-white border rounded-lg p-3 hover:border-green-400 hover:shadow-sm transition-all ${
-                  isCurrent ? 'border-green-500 ring-1 ring-green-200' : 'border-gray-200'
-                }`}
-              >
-                <div>
-                  <div className="font-semibold text-gray-800 text-sm">{rep.rep_id}</div>
-                  <div className="text-xs text-gray-500 mt-0.5">{rep.territory_name}</div>
-                  <div className="flex items-center gap-1 text-xs text-gray-400 mt-0.5">
-                    <MapPin size={10} /> {rep.district}, {rep.state}
-                  </div>
-                </div>
-                <ChevronRight size={16} className="text-gray-300" />
-              </button>
-            );
-          })}
-          {filtered.length > 50 && (
-            <p className="text-xs text-center text-gray-400">{t('reps.showingHint', { total: filtered.length })}</p>
-          )}
+      )}
+
+      {/* Empty state */}
+      {!loading && totalShown === 0 && (
+        <div className="bg-white border border-dashed border-gray-300 rounded-xl py-12 text-center">
+          <Users size={28} className="mx-auto text-gray-300 mb-2" />
+          <p className="text-sm text-gray-500">{t('reps.noMatches')}</p>
         </div>
+      )}
+
+      {/* Grouped rep grid */}
+      {!loading && byState.map(group => {
+        const color = stateColor(group.state);
+        return (
+          <section key={group.state} className="space-y-2">
+            <div className="flex items-center justify-between">
+              <h2 className="font-display text-sm font-semibold text-gray-700 uppercase tracking-wider flex items-center gap-2">
+                <span
+                  className="w-2 h-2 rounded-full"
+                  style={{ background: color.text }}
+                />
+                {group.state}
+              </h2>
+              <span className="text-xs text-gray-400 font-medium">
+                {group.reps.length}
+              </span>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {group.reps.map(rep => {
+                const isCurrent = rep.rep_id === currentRepId;
+                const c = stateColor(rep.state);
+                return (
+                  <button
+                    key={rep.rep_id}
+                    onClick={() => handlePick(rep)}
+                    className={`group flex items-center gap-3 text-left bg-white border rounded-xl p-3 transition-all hover:shadow-sm hover:-translate-y-px ${
+                      isCurrent
+                        ? 'border-green-500 ring-2 ring-green-100 shadow-sm'
+                        : 'border-gray-200 hover:border-green-300'
+                    }`}
+                  >
+                    {/* Avatar */}
+                    <div
+                      className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm shrink-0"
+                      style={{ background: c.bg, color: c.text }}
+                    >
+                      {initials(rep.rep_id)}
+                    </div>
+                    {/* Info */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <div className="font-semibold text-gray-900 text-sm truncate">
+                          {prettifyTerritoryName(rep.territory_name)}
+                        </div>
+                        {isCurrent && (
+                          <span className="text-[10px] uppercase tracking-wider font-semibold text-green-700 bg-green-100 px-1.5 py-0.5 rounded">
+                            Current
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-xs text-gray-500 mt-0.5 truncate">
+                        {rep.rep_id}
+                      </div>
+                      <div className="flex items-center gap-1 text-xs text-gray-400 mt-0.5">
+                        <MapPin size={10} />
+                        <span className="truncate">{rep.district}</span>
+                      </div>
+                    </div>
+                    <ChevronRight
+                      size={16}
+                      className="text-gray-300 group-hover:text-green-500 transition-colors shrink-0"
+                    />
+                  </button>
+                );
+              })}
+            </div>
+          </section>
+        );
+      })}
+
+      {/* Hint when capping per-state */}
+      {!loading && totalShown > byState.reduce((s, g) => s + g.reps.length, 0) && (
+        <p className="text-xs text-center text-gray-400 mt-2">
+          {t('reps.showingHint', { total: totalShown })}
+        </p>
       )}
     </div>
   );
