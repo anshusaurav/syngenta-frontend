@@ -3,6 +3,9 @@
 import { useEffect, useState } from 'react';
 import { getAnomalies, resolveAnomaly, refreshAnomalies, AnomalyFlag } from '@/lib/api';
 import { AlertTriangle, RefreshCw, CheckCircle } from 'lucide-react';
+import { useLocale } from '@/lib/i18n/LocaleProvider';
+import { useSelectedRep } from '@/lib/useSelectedRep';
+import RepSelector from '@/components/RepSelector';
 
 const severityStyle: Record<string, string> = {
   high: 'border-l-red-500 bg-red-50',
@@ -16,40 +19,46 @@ const severityBadge: Record<string, string> = {
   low: 'bg-yellow-100 text-yellow-700',
 };
 
-const typeLabel: Record<string, string> = {
-  stock_out:           '📦 Stock Out',
-  demand_spike:        '📈 Demand Spike',
-  low_inventory:       '⚠ Low Inventory',
-  visit_gap:           '🕐 Visit Gap',
-  digital_intent:      '📱 Digital Intent',
-  weather_alert:       '🌧 Weather Alert',
-  brain_demand_spike:  '🧠 ML Demand Spike',
-  brain_stockout_risk: '🧠 ML Stockout Risk',
+const filterKeys: Record<string, string> = {
+  all: 'anomalies.filterAll',
+  high: 'anomalies.filterHigh',
+  medium: 'anomalies.filterMedium',
+  low: 'anomalies.filterLow',
+};
+
+const severityKeys: Record<string, string> = {
+  high: 'anomalies.severityHigh',
+  medium: 'anomalies.severityMedium',
+  low: 'anomalies.severityLow',
 };
 
 export default function AnomaliesPage() {
+  const { t, locale } = useLocale();
+  const dateLocale = locale === 'hi' ? 'hi-IN' : 'en-IN';
+  const { repId, territoryId, setRep, hydrated } = useSelectedRep();
   const [anomalies, setAnomalies] = useState<AnomalyFlag[]>([]);
   const [filter, setFilter] = useState<string>('all');
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [resolving, setResolving] = useState<string | null>(null);
 
-  const territoryId = 'TER_0001'; // TODO: tie to selected rep
-
-  const load = async () => {
+  const load = async (tid: string, sev: string) => {
     setLoading(true);
-    const severity = filter === 'all' ? undefined : filter;
-    const data = await getAnomalies(territoryId, severity);
+    const severity = sev === 'all' ? undefined : sev;
+    const data = await getAnomalies(tid, severity);
     setAnomalies(data.anomalies);
     setLoading(false);
   };
 
-  useEffect(() => { load(); }, [filter]);
+  // Re-fetch when severity filter or selected territory changes (after hydration).
+  useEffect(() => {
+    if (hydrated) load(territoryId, filter);
+  }, [filter, territoryId, hydrated]);
 
   const handleRefresh = async () => {
     setRefreshing(true);
     await refreshAnomalies();
-    await load();
+    await load(territoryId, filter);
     setRefreshing(false);
   };
 
@@ -71,9 +80,9 @@ export default function AnomaliesPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-xl font-bold text-gray-800 flex items-center gap-2">
-            <AlertTriangle size={20} className="text-red-500" /> Alerts
+            <AlertTriangle size={20} className="text-red-500" /> {t('anomalies.title')}
           </h1>
-          <p className="text-sm text-gray-500">Territory {territoryId}</p>
+          <p className="text-sm text-gray-500">{t('anomalies.territory', { id: territoryId })}</p>
         </div>
         <button
           onClick={handleRefresh}
@@ -81,16 +90,19 @@ export default function AnomaliesPage() {
           className="flex items-center gap-1.5 text-sm text-green-700 border border-green-300 rounded-lg px-3 py-1.5 hover:bg-green-50 disabled:opacity-50"
         >
           <RefreshCw size={14} className={refreshing ? 'animate-spin' : ''} />
-          {refreshing ? 'Running...' : 'Re-detect'}
+          {refreshing ? t('anomalies.redetecting') : t('anomalies.redetect')}
         </button>
       </div>
+
+      {/* Rep / territory selector — shared with Dashboard via localStorage */}
+      <RepSelector currentRepId={repId} onSelect={(rid, tid) => setRep(rid, tid)} />
 
       {/* Type summary chips */}
       {Object.entries(byType).length > 0 && (
         <div className="flex flex-wrap gap-2">
           {Object.entries(byType).map(([type, count]) => (
             <div key={type} className="text-xs bg-white border border-gray-200 rounded-full px-3 py-1 text-gray-600">
-              {typeLabel[type] ?? type}: <span className="font-bold">{count}</span>
+              {t(`anomalies.typeLong.${type}`)}: <span className="font-bold">{count}</span>
             </div>
           ))}
         </div>
@@ -106,7 +118,7 @@ export default function AnomaliesPage() {
               filter === s ? 'bg-green-700 text-white border-green-700' : 'border-gray-200 text-gray-600 hover:border-green-400'
             }`}
           >
-            {s.charAt(0).toUpperCase() + s.slice(1)}
+            {t(filterKeys[s])}
           </button>
         ))}
       </div>
@@ -119,7 +131,7 @@ export default function AnomaliesPage() {
       ) : anomalies.length === 0 ? (
         <div className="text-center py-12 text-gray-400">
           <CheckCircle size={32} className="mx-auto mb-2 text-green-300" />
-          No active alerts
+          {t('anomalies.noAlerts')}
         </div>
       ) : (
         <div className="space-y-2">
@@ -127,21 +139,21 @@ export default function AnomaliesPage() {
             <div key={a._id} className={`border-l-4 rounded-lg p-3 ${severityStyle[a.severity]} flex items-start justify-between gap-3`}>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-xs font-medium text-gray-700">{typeLabel[a.anomaly_type] ?? a.anomaly_type}</span>
+                  <span className="text-xs font-medium text-gray-700">{t(`anomalies.typeLong.${a.anomaly_type}`)}</span>
                   <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium ${severityBadge[a.severity]}`}>
-                    {a.severity}
+                    {t(severityKeys[a.severity])}
                   </span>
                   {a.sku_name && <span className="text-xs text-gray-500 font-medium">{a.sku_name}</span>}
                 </div>
                 <p className="text-xs text-gray-600 mt-1 leading-relaxed">{a.description}</p>
-                <p className="text-xs text-gray-400 mt-1">{a.retailer_id} · {new Date(a.detected_at).toLocaleDateString('en-IN')}</p>
+                <p className="text-xs text-gray-400 mt-1">{a.retailer_id} · {new Date(a.detected_at).toLocaleDateString(dateLocale)}</p>
               </div>
               <button
                 onClick={() => handleResolve(a._id)}
                 disabled={resolving === a._id}
                 className="shrink-0 text-xs text-green-700 border border-green-300 px-2 py-1 rounded hover:bg-green-50 disabled:opacity-50"
               >
-                {resolving === a._id ? '...' : 'Resolve'}
+                {resolving === a._id ? t('anomalies.resolving') : t('anomalies.resolve')}
               </button>
             </div>
           ))}

@@ -8,11 +8,14 @@ import Link from 'next/link';
 import ReactMarkdown from 'react-markdown';
 import RFRecommendationCard from '@/components/RFRecommendationCard';
 import VelocityChart from '@/components/VelocityChart';
+import { useLocale } from '@/lib/i18n/LocaleProvider';
 
 export default function RetailerDetailPage() {
   const { id } = useParams<{ id: string }>();
   const searchParams = useSearchParams();
   const repId = searchParams.get('repId') || 'REP_0001';
+  const { t, locale } = useLocale();
+  const dateLocale = locale === 'hi' ? 'hi-IN' : 'en-IN';
 
   const [detail, setDetail] = useState<RetailerDetail | null>(null);
   const [advice, setAdvice] = useState<NextBestAction | null>(null);
@@ -23,6 +26,7 @@ export default function RetailerDetailPage() {
   const [notes, setNotes] = useState('');
   const [logged, setLogged] = useState(false);
   const [logLoading, setLogLoading] = useState(false);
+  const [logError, setLogError] = useState('');
   const [detailLoading, setDetailLoading] = useState(true);
   const [velocity, setVelocity] = useState<VelocityData | null>(null);
   const [velocityLoading, setVelocityLoading] = useState(true);
@@ -45,7 +49,7 @@ export default function RetailerDetailPage() {
         setProduct(result.context_snapshot.currentInventory[0].sku_name);
       }
     } catch (e: any) {
-      setAiError(e?.response?.data?.error || 'AI request failed');
+      setAiError(e?.response?.data?.error || t('retailer.aiAdviceError'));
     } finally {
       setAiLoading(false);
     }
@@ -54,16 +58,21 @@ export default function RetailerDetailPage() {
   const submitOutcome = async () => {
     if (!outcome) return;
     setLogLoading(true);
+    setLogError('');
     try {
       await logOutcome({ repId, retailerId: id, outcome, productDiscussed: product, notes, aiRecommendationUsed: !!advice });
       setLogged(true);
+    } catch (e: any) {
+      // Surface the actual reason so the user knows what to retry.
+      const msg = e?.response?.data?.error || e?.message || 'Unknown error';
+      setLogError(msg);
     } finally {
       setLogLoading(false);
     }
   };
 
   if (detailLoading) return <div className="space-y-3">{[1,2,3].map(i => <div key={i} className="h-24 bg-gray-200 rounded-lg animate-pulse" />)}</div>;
-  if (!detail) return <div className="text-center py-10 text-gray-400">Retailer not found.</div>;
+  if (!detail) return <div className="text-center py-10 text-gray-400">{t('retailer.notFound')}</div>;
 
   const { retailer, inventory, top_products_30d, active_anomalies, recent_visits } = detail;
 
@@ -72,7 +81,7 @@ export default function RetailerDetailPage() {
       {/* Back + header */}
       <div>
         <Link href="/dashboard" className="flex items-center gap-1 text-sm text-green-700 mb-2">
-          <ChevronLeft size={15} /> Back to plan
+          <ChevronLeft size={15} /> {t('retailer.backToPlan')}
         </Link>
         <h1 className="text-xl font-bold text-gray-800">{retailer.retailer_id}</h1>
         <div className="flex items-center gap-1 text-sm text-gray-500 mt-0.5">
@@ -83,7 +92,7 @@ export default function RetailerDetailPage() {
       {/* Active anomalies */}
       {active_anomalies.length > 0 && (
         <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-          <div className="font-semibold text-red-700 text-sm mb-1">⚠ Active Alerts</div>
+          <div className="font-semibold text-red-700 text-sm mb-1">{t('retailer.activeAlertsHeader')}</div>
           {active_anomalies.map((a, i) => (
             <div key={i} className="text-xs text-red-600">{a.description}</div>
           ))}
@@ -93,17 +102,17 @@ export default function RetailerDetailPage() {
       {/* Inventory snapshot */}
       <div className="bg-white border border-gray-200 rounded-lg p-4">
         <div className="flex items-center gap-2 font-semibold text-gray-700 text-sm mb-3">
-          <Package size={15} /> Current Inventory
+          <Package size={15} /> {t('retailer.currentInventory')}
         </div>
         {inventory.length === 0 ? (
-          <div className="text-xs text-gray-400">No inventory data</div>
+          <div className="text-xs text-gray-400">{t('retailer.noInventory')}</div>
         ) : (
           <div className="space-y-2">
             {inventory.map((inv, i) => (
               <div key={i} className="flex items-center justify-between">
                 <span className="text-sm text-gray-700">{inv.sku_name}</span>
                 <span className={`text-sm font-semibold ${inv.sku_qty === 0 ? 'text-red-600' : inv.sku_qty <= 5 ? 'text-amber-600' : 'text-green-700'}`}>
-                  {inv.sku_qty === 0 ? 'OUT OF STOCK' : `${inv.sku_qty} units`}
+                  {inv.sku_qty === 0 ? t('retailer.outOfStockTag') : t('retailer.unitsCount', { n: inv.sku_qty })}
                 </span>
               </div>
             ))}
@@ -115,13 +124,13 @@ export default function RetailerDetailPage() {
       {top_products_30d.length > 0 && (
         <div className="bg-white border border-gray-200 rounded-lg p-4">
           <div className="flex items-center gap-2 font-semibold text-gray-700 text-sm mb-3">
-            <TrendingUp size={15} /> Top Sales (30 days)
+            <TrendingUp size={15} /> {t('retailer.topSales')}
           </div>
           <div className="space-y-2">
             {top_products_30d.map((p, i) => (
               <div key={i} className="flex items-center justify-between text-sm">
                 <span className="text-gray-700">{p.sku_name}</span>
-                <span className="text-gray-500">{p.units} units · ₹{p.revenue.toLocaleString()}</span>
+                <span className="text-gray-500">{t('retailer.salesLine', { units: p.units, revenue: p.revenue.toLocaleString(dateLocale) })}</span>
               </div>
             ))}
           </div>
@@ -131,11 +140,11 @@ export default function RetailerDetailPage() {
       {/* Recent visits */}
       {recent_visits.length > 0 && (
         <div className="bg-white border border-gray-200 rounded-lg p-4">
-          <div className="font-semibold text-gray-700 text-sm mb-2">Recent Visits</div>
+          <div className="font-semibold text-gray-700 text-sm mb-2">{t('retailer.recentVisits')}</div>
           <div className="space-y-1.5">
             {recent_visits.map((v, i) => (
               <div key={i} className="text-xs text-gray-500 flex justify-between">
-                <span>{new Date(v.visit_date).toLocaleDateString('en-IN')} · {v.visit_type}</span>
+                <span>{new Date(v.visit_date).toLocaleDateString(dateLocale)} · {v.visit_type}</span>
                 <span className="text-green-700">{v.product_recommended}</span>
               </div>
             ))}
@@ -146,18 +155,16 @@ export default function RetailerDetailPage() {
       {/* ML Velocity Chart */}
       <div className="bg-white border border-gray-200 rounded-lg p-4">
         <div className="flex items-center gap-2 font-semibold text-gray-700 text-sm mb-3">
-          <Activity size={15} className="text-purple-600" /> Sales Velocity · LSTM Forecast
+          <Activity size={15} className="text-purple-600" /> {t('retailer.velocityHeader')}
         </div>
         {velocityLoading ? (
           <div className="h-40 flex items-center justify-center text-xs text-gray-400 animate-pulse">
-            Loading LSTM forecast...
+            {t('retailer.velocityLoading')}
           </div>
         ) : velocity ? (
           <VelocityChart data={velocity} />
         ) : (
-          <p className="text-xs text-gray-400">
-            No LSTM model loaded — run <code className="bg-gray-100 px-1 rounded">node scripts/trainBrain.js</code> to generate forecasts.
-          </p>
+          <p className="text-xs text-gray-400">{t('retailer.velocityNoModel')}</p>
         )}
       </div>
 
@@ -167,7 +174,7 @@ export default function RetailerDetailPage() {
       {/* AI Recommendation */}
       <div className="bg-green-50 border border-green-200 rounded-lg p-4">
         <div className="flex items-center gap-2 font-semibold text-green-800 text-sm mb-3">
-          <Sparkles size={15} /> AI Next Best Action
+          <Sparkles size={15} /> {t('retailer.aiAdvice')}
         </div>
 
         {!advice && !aiLoading && (
@@ -175,13 +182,13 @@ export default function RetailerDetailPage() {
             onClick={fetchAdvice}
             className="w-full bg-green-700 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-green-800 transition-colors"
           >
-            Get Next Best Action
+            {t('retailer.aiAdviceCta')}
           </button>
         )}
 
         {aiLoading && (
           <div className="flex items-center gap-2 text-green-700 text-sm animate-pulse py-2">
-            <Sparkles size={14} className="animate-spin" /> Analyzing field data...
+            <Sparkles size={14} className="animate-spin" /> {t('retailer.aiAdviceLoading')}
           </div>
         )}
 
@@ -205,7 +212,7 @@ export default function RetailerDetailPage() {
               onClick={fetchAdvice}
               className="mt-3 text-xs text-green-600 underline"
             >
-              Regenerate
+              {t('retailer.aiAdviceRegenerate')}
             </button>
           </div>
         )}
@@ -214,7 +221,7 @@ export default function RetailerDetailPage() {
       {/* Outcome logger */}
       {!logged ? (
         <div className="bg-white border border-gray-200 rounded-lg p-4">
-          <div className="font-semibold text-gray-700 text-sm mb-3">Log Visit Outcome</div>
+          <div className="font-semibold text-gray-700 text-sm mb-3">{t('retailer.logOutcome')}</div>
           <div className="space-y-3">
             <div className="grid grid-cols-3 gap-2">
               {(['sale_made', 'order_placed', 'no_purchase'] as const).map(o => (
@@ -227,19 +234,19 @@ export default function RetailerDetailPage() {
                       : 'border-gray-200 text-gray-600 hover:border-green-400'
                   }`}
                 >
-                  {o === 'sale_made' ? '✓ Sale Made' : o === 'order_placed' ? '📋 Order' : '✗ No Purchase'}
+                  {o === 'sale_made' ? t('retailer.outcomeSaleMade') : o === 'order_placed' ? t('retailer.outcomeOrderPlaced') : t('retailer.outcomeNoPurchase')}
                 </button>
               ))}
             </div>
 
             <input
-              placeholder="Product discussed"
+              placeholder={t('retailer.productDiscussedPlaceholder')}
               value={product}
               onChange={e => setProduct(e.target.value)}
               className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-green-400"
             />
             <textarea
-              placeholder="Notes (optional)"
+              placeholder={t('retailer.notesPlaceholder')}
               value={notes}
               onChange={e => setNotes(e.target.value)}
               rows={2}
@@ -250,13 +257,18 @@ export default function RetailerDetailPage() {
               disabled={!outcome || logLoading}
               className="w-full bg-green-700 text-white py-2.5 rounded-lg text-sm font-medium disabled:opacity-40 hover:bg-green-800 transition-colors"
             >
-              {logLoading ? 'Saving...' : 'Submit Outcome'}
+              {logLoading ? t('retailer.savingOutcome') : t('retailer.submitOutcome')}
             </button>
+            {logError && (
+              <div className="mt-2 text-xs text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+                {logError}
+              </div>
+            )}
           </div>
         </div>
       ) : (
         <div className="flex items-center gap-2 bg-green-100 border border-green-300 rounded-lg p-4 text-green-800 font-medium">
-          <CheckCircle size={18} /> Visit outcome logged successfully
+          <CheckCircle size={18} /> {t('retailer.outcomeSavedBanner')}
         </div>
       )}
     </div>

@@ -17,9 +17,16 @@ export interface Rep {
 
 export interface RepStats {
   rep_id: string;
+  as_of: string;
   visits_this_week: number;
   outcomes_this_month: Record<string, number>;
   acceptance_rate_30d: number;
+  revenue_per_field_day_30d: number;
+  revenue_total_30d: number;
+  field_days_30d: number;
+  coverage_efficiency_30d: number;
+  tehsils_visited_30d: number;
+  tehsils_total: number;
 }
 
 export interface ScoreBreakdown {
@@ -183,3 +190,37 @@ export const getVelocityData = (retailerId: string, sku?: string) =>
     '/api/brain-anomalies/velocity',
     { params: { retailerId, ...(sku ? { sku } : {}) } }
   ).then(r => r.data);
+
+export interface DistrictCoordEntry {
+  district: string;
+  state: string;
+  lat: number;
+  lon: number;
+}
+
+export const getDistrictCoords = () =>
+  api.get<{ success: boolean; total: number; districts: DistrictCoordEntry[] }>('/api/weather/districts')
+    .then(r => r.data.districts);
+
+export interface OptimizedStop {
+  retailer_id: string;
+  lat: number;
+  lon: number;
+  has_anomaly: boolean;
+  severity?: 'high' | 'medium' | 'low';
+}
+
+export interface OptimizedRoute {
+  route: string[];
+  total_distance_km: number;
+  raw_distance_km: number;
+  stops: OptimizedStop[];
+  start: { lat: number; lon: number; label: string };
+  solver: string;
+  improvements: { initial_km: number; final_km: number };
+}
+
+export const getOptimizedRoute = (repId: string, date: string, limit = 10) =>
+  api.get<{ success: boolean } & OptimizedRoute>('/api/route-optimize', {
+    params: { repId, date, limit },
+  }).then(r => r.data);

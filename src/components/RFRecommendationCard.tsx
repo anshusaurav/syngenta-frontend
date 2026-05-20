@@ -3,8 +3,11 @@
 import { useEffect, useState } from 'react';
 import { getRFRecommendation, RFRecommendation } from '@/lib/api';
 import { BrainCircuit, Loader2, AlertCircle } from 'lucide-react';
+import { useLocale } from '@/lib/i18n/LocaleProvider';
 
 export default function RFRecommendationCard({ retailerId }: { retailerId: string }) {
+  const { t, locale } = useLocale();
+  const numberLocale = locale === 'hi' ? 'hi-IN' : 'en-IN';
   const [data, setData]       = useState<RFRecommendation | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError]     = useState('');
@@ -20,7 +23,7 @@ export default function RFRecommendationCard({ retailerId }: { retailerId: strin
     return (
       <div className="border border-purple-100 rounded-xl p-4 bg-purple-50 flex items-center gap-2 text-sm text-purple-600">
         <Loader2 size={14} className="animate-spin shrink-0" />
-        ML model predicting…
+        {t('rfCard.predicting')}
       </div>
     );
   }
@@ -29,7 +32,7 @@ export default function RFRecommendationCard({ retailerId }: { retailerId: strin
     return (
       <div className="border border-gray-200 rounded-xl p-4 bg-gray-50 flex items-start gap-2 text-xs text-gray-500">
         <AlertCircle size={13} className="shrink-0 mt-0.5" />
-        <span>ML model: {error}</span>
+        <span>{t('rfCard.errorPrefix')} {error}</span>
       </div>
     );
   }
@@ -44,9 +47,9 @@ export default function RFRecommendationCard({ retailerId }: { retailerId: strin
       {/* Header */}
       <div className="flex items-center gap-2 px-4 py-2.5 bg-purple-50 border-b border-purple-100">
         <BrainCircuit size={14} className="text-purple-600 shrink-0" />
-        <span className="text-xs font-semibold text-purple-700 uppercase tracking-wide">ML Model Recommendation</span>
+        <span className="text-xs font-semibold text-purple-700 uppercase tracking-wide">{t('rfCard.header')}</span>
         <span className="ml-auto text-xs text-purple-400">
-          {data.model_trained_on.toLocaleString()} visits trained
+          {t('rfCard.visitsTrained', { n: data.model_trained_on.toLocaleString(numberLocale) })}
         </span>
       </div>
 
@@ -55,7 +58,7 @@ export default function RFRecommendationCard({ retailerId }: { retailerId: strin
         {/* Product + confidence */}
         <div className="flex items-center justify-between gap-3">
           <span className="font-semibold text-gray-800 text-sm">{data.product_recommended}</span>
-          <span className="text-xs text-gray-500 shrink-0">{pct}% confidence</span>
+          <span className="text-xs text-gray-500 shrink-0">{t('rfCard.confidence', { pct })}</span>
         </div>
 
         {/* Confidence bar */}
@@ -66,7 +69,7 @@ export default function RFRecommendationCard({ retailerId }: { retailerId: strin
           />
         </div>
 
-        {/* Reasoning */}
+        {/* Reasoning — backend prose, kept in source language */}
         <p className="text-xs text-gray-600 leading-relaxed">{data.reasoning}</p>
       </div>
     </div>
