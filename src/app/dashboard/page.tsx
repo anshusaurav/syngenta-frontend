@@ -41,10 +41,11 @@ export default function DashboardPage() {
   const [weather, setWeather] = useState<WeatherSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [view, setView] = useState<ViewMode>('list');
+  // Map view is the default — list is opt-in via the toggle.
+  const [view, setView] = useState<ViewMode>('map');
   const [rep, setRepObj] = useState<Rep | null>(null);
 
-  // Restore last-used view preference
+  // Restore last-used view preference (overrides the default).
   useEffect(() => {
     const stored = localStorage.getItem(VIEW_KEY);
     if (stored === 'map' || stored === 'list') setView(stored);
