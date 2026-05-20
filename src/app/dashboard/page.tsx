@@ -108,98 +108,66 @@ export default function DashboardPage() {
   const urgent = plan.filter(p => p.priority === 'urgent').length;
   const high = plan.filter(p => p.priority === 'high').length;
 
+  const totalOutcomes = stats
+    ? Object.values(stats.outcomes_this_month || {}).reduce((s, n) => s + n, 0)
+    : 0;
+
   return (
-    <div className="space-y-5">
-      {/* Header */}
+    <div className="page-shell space-y-5">
+      {/* ─── Header: title + date + refresh ─────────────────────────── */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-bold text-gray-800">{t('dashboard.title')}</h1>
-          <p className="text-sm text-gray-500">{today}</p>
+          <h1 className="font-display text-2xl font-bold tracking-tight text-gray-900">
+            {t('dashboard.title')}
+          </h1>
+          <p className="text-sm text-gray-500 mt-0.5">{today}</p>
         </div>
         <button
           onClick={() => load(repId, territoryId)}
-          className="flex items-center gap-1.5 text-sm text-green-700 border border-green-300 rounded-lg px-3 py-1.5 hover:bg-green-50"
+          className="flex items-center gap-1.5 text-sm text-green-700 border border-green-300 rounded-lg px-3 py-1.5 hover:bg-green-50 transition-colors"
         >
           <RefreshCw size={14} /> {t('common.refresh')}
         </button>
       </div>
 
-      {/* Rep selector */}
+      {/* ─── Rep selector ───────────────────────────────────────────── */}
       <RepSelector currentRepId={repId} onSelect={handleRepChange} />
 
-      {/* Error */}
+      {/* ─── Offline / error banner ─────────────────────────────────── */}
       {error && (
         <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-sm text-amber-700">
           {t('dashboard.error')}
         </div>
       )}
 
-      {/* Stats row */}
-      {stats && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-          <StatCard label={t('dashboard.stats.visitsThisWeek')} value={stats.visits_this_week} />
-          {(() => {
-            const totalOutcomes = Object.values(stats.outcomes_this_month || {}).reduce((s, n) => s + n, 0);
-            return (
-              <StatCard
-                label={t('dashboard.stats.acceptanceRate')}
-                value={totalOutcomes === 0 ? '—' : `${stats.acceptance_rate_30d}%`}
-                sub={
-                  totalOutcomes === 0
-                    ? t('dashboard.stats.noOutcomes')
-                    : t(totalOutcomes === 1 ? 'dashboard.stats.outcomesSub' : 'dashboard.stats.outcomesSubPlural', { n: totalOutcomes })
-                }
-              />
-            );
-          })()}
-          <StatCard
-            label={t('dashboard.stats.revenuePerFieldDay')}
-            value={`₹${formatCompact(stats.revenue_per_field_day_30d)}`}
-            sub={t('dashboard.stats.fieldDaysSub', { days: stats.field_days_30d })}
-          />
-          <StatCard
-            label={t('dashboard.stats.coverageEfficiency')}
-            value={`${stats.coverage_efficiency_30d}%`}
-            sub={t('dashboard.stats.tehsilsSub', { visited: stats.tehsils_visited_30d, total: stats.tehsils_total })}
-          />
-          <StatCard
-            label={t('dashboard.stats.activeAlerts')}
-            value={anomalies.length}
-            highlight={anomalies.length > 0}
-          />
-        </div>
-      )}
-
-      {/* Anomaly banner */}
-      {anomalies.length > 0 && <AnomalySummaryBanner anomalies={anomalies} />}
-
-      {/* Weather strip */}
+      {/* ─── Weather strip — context for the day ────────────────────── */}
       {weather && <WeatherStrip weather={weather} />}
 
-      {/* Visit plan */}
+      {/* ─── Visit plan (HERO) — map by default, list opt-in ────────── */}
       <section>
         <div className="flex items-center justify-between gap-2 mb-3">
           <div className="flex items-center gap-2 flex-wrap">
-            <h2 className="font-semibold text-gray-700">{t('dashboard.recommendedVisits')}</h2>
+            <h2 className="font-display text-lg font-semibold text-gray-900">
+              {t('dashboard.recommendedVisits')}
+            </h2>
             {urgent > 0 && (
-              <span className="text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded-full">
+              <span className="text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded-full font-medium">
                 {t('dashboard.urgentTag', { count: urgent })}
               </span>
             )}
             {high > 0 && (
-              <span className="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">
+              <span className="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-medium">
                 {t('dashboard.highTag', { count: high })}
               </span>
             )}
           </div>
-          {/* List / Map toggle */}
-          <div className="flex items-center bg-white border border-gray-200 rounded-lg p-0.5 shrink-0">
+          <div className="flex items-center bg-white border border-gray-200 rounded-lg p-0.5 shrink-0 shadow-sm">
             <button
               type="button"
               onClick={() => handleViewChange('list')}
               aria-pressed={view === 'list'}
               className={`flex items-center gap-1 px-2.5 py-1 rounded text-xs font-medium transition-colors ${
-                view === 'list' ? 'bg-green-700 text-white' : 'text-gray-500 hover:bg-gray-100'
+                view === 'list' ? 'bg-green-700 text-white shadow-sm' : 'text-gray-500 hover:bg-gray-100'
               }`}
             >
               <List size={12} /> {t('dashboard.viewList')}
@@ -209,7 +177,7 @@ export default function DashboardPage() {
               onClick={() => handleViewChange('map')}
               aria-pressed={view === 'map'}
               className={`flex items-center gap-1 px-2.5 py-1 rounded text-xs font-medium transition-colors ${
-                view === 'map' ? 'bg-green-700 text-white' : 'text-gray-500 hover:bg-gray-100'
+                view === 'map' ? 'bg-green-700 text-white shadow-sm' : 'text-gray-500 hover:bg-gray-100'
               }`}
             >
               <MapIcon size={12} /> {t('dashboard.viewMap')}
@@ -224,7 +192,9 @@ export default function DashboardPage() {
             ))}
           </div>
         ) : plan.length === 0 ? (
-          <div className="text-center py-10 text-gray-400">{t('dashboard.noRetailers')}</div>
+          <div className="text-center py-10 text-gray-400 bg-white border border-dashed border-gray-200 rounded-lg">
+            {t('dashboard.noRetailers')}
+          </div>
         ) : view === 'map' ? (
           <VisitPlanMap plan={plan} repId={repId} date={today} repDistrict={rep?.district} />
         ) : (
@@ -235,6 +205,45 @@ export default function DashboardPage() {
           </div>
         )}
       </section>
+
+      {/* ─── Anomaly banner — actionable summary, just under the plan ─ */}
+      {anomalies.length > 0 && <AnomalySummaryBanner anomalies={anomalies} />}
+
+      {/* ─── KPI strip — below the work, summary view ───────────────── */}
+      {stats && (
+        <section>
+          <h3 className="font-display text-sm font-semibold text-gray-600 uppercase tracking-wider mb-2">
+            {t('dashboard.stats.thirtyDays')}
+          </h3>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+            <StatCard label={t('dashboard.stats.visitsThisWeek')} value={stats.visits_this_week} />
+            <StatCard
+              label={t('dashboard.stats.acceptanceRate')}
+              value={totalOutcomes === 0 ? '—' : `${stats.acceptance_rate_30d}%`}
+              sub={
+                totalOutcomes === 0
+                  ? t('dashboard.stats.noOutcomes')
+                  : t(totalOutcomes === 1 ? 'dashboard.stats.outcomesSub' : 'dashboard.stats.outcomesSubPlural', { n: totalOutcomes })
+              }
+            />
+            <StatCard
+              label={t('dashboard.stats.revenuePerFieldDay')}
+              value={`₹${formatCompact(stats.revenue_per_field_day_30d)}`}
+              sub={t('dashboard.stats.fieldDaysSub', { days: stats.field_days_30d })}
+            />
+            <StatCard
+              label={t('dashboard.stats.coverageEfficiency')}
+              value={`${stats.coverage_efficiency_30d}%`}
+              sub={t('dashboard.stats.tehsilsSub', { visited: stats.tehsils_visited_30d, total: stats.tehsils_total })}
+            />
+            <StatCard
+              label={t('dashboard.stats.activeAlerts')}
+              value={anomalies.length}
+              highlight={anomalies.length > 0}
+            />
+          </div>
+        </section>
+      )}
     </div>
   );
 }

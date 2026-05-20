@@ -75,7 +75,7 @@ export default function AnomaliesPage() {
   }, {});
 
   return (
-    <div className="space-y-4">
+    <div className="page-shell space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>

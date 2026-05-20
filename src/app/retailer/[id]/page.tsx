@@ -71,13 +71,13 @@ export default function RetailerDetailPage() {
     }
   };
 
-  if (detailLoading) return <div className="space-y-3">{[1,2,3].map(i => <div key={i} className="h-24 bg-gray-200 rounded-lg animate-pulse" />)}</div>;
-  if (!detail) return <div className="text-center py-10 text-gray-400">{t('retailer.notFound')}</div>;
+  if (detailLoading) return <div className="page-shell space-y-3">{[1,2,3].map(i => <div key={i} className="h-24 bg-gray-200 rounded-lg animate-pulse" />)}</div>;
+  if (!detail) return <div className="page-shell text-center py-10 text-gray-400">{t('retailer.notFound')}</div>;
 
   const { retailer, inventory, top_products_30d, active_anomalies, recent_visits } = detail;
 
   return (
-    <div className="space-y-4">
+    <div className="page-shell space-y-4">
       {/* Back + header */}
       <div>
         <Link href="/dashboard" className="flex items-center gap-1 text-sm text-green-700 mb-2">

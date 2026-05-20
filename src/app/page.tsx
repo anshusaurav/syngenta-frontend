@@ -1,5 +1,184 @@
-import { redirect } from 'next/navigation';
+'use client';
 
-export default function Home() {
-  redirect('/dashboard');
+import Link from 'next/link';
+import {
+  Sprout,
+  MapPinned,
+  Sparkles,
+  AlertTriangle,
+  Database,
+  BrainCircuit,
+  Smartphone,
+  ArrowRight,
+  CheckCircle2,
+} from 'lucide-react';
+import { useLocale } from '@/lib/i18n/LocaleProvider';
+
+export default function LandingPage() {
+  const { t } = useLocale();
+
+  return (
+    <div className="font-display">
+      {/* ─── HERO ─────────────────────────────────────────────────────── */}
+      <section className="relative overflow-hidden bg-gradient-to-b from-green-50 via-white to-stone-50">
+        {/* Decorative blurred accents — saffron + brand */}
+        <div className="absolute -top-24 -right-24 w-96 h-96 rounded-full bg-saffron-100/60 blur-3xl"
+             style={{ background: 'radial-gradient(closest-side, rgba(249,115,22,0.18), transparent)' }} />
+        <div className="absolute -bottom-32 -left-24 w-[28rem] h-[28rem] rounded-full"
+             style={{ background: 'radial-gradient(closest-side, rgba(22,163,74,0.18), transparent)' }} />
+
+        <div className="relative max-w-5xl mx-auto px-5 pt-14 pb-20 sm:pt-20 sm:pb-28">
+          <div className="flex flex-col items-center text-center max-w-3xl mx-auto animate-fade-up">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border border-green-200 text-xs font-semibold text-green-800 shadow-sm">
+              <Sprout size={13} /> {t('landing.heroEyebrow')}
+            </span>
+            <h1 className="mt-5 text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-gray-900 leading-[1.1]">
+              {t('landing.heroTitle')}
+            </h1>
+            <p className="mt-5 text-base sm:text-lg text-gray-600 leading-relaxed max-w-2xl">
+              {t('landing.heroSubtitle')}
+            </p>
+            <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+              <Link
+                href="/dashboard"
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-green-700 text-white font-semibold shadow-lg shadow-green-700/20 hover:bg-green-800 transition-all hover:-translate-y-0.5"
+              >
+                {t('landing.ctaPrimary')} <ArrowRight size={16} />
+              </Link>
+              <Link
+                href="/reps"
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-white text-gray-800 font-semibold border border-gray-200 hover:border-green-400 transition-colors"
+              >
+                {t('landing.ctaSecondary')}
+              </Link>
+            </div>
+            <p className="mt-5 text-xs text-gray-400 uppercase tracking-wider">
+              {t('landing.tagline')}
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* ─── WHY THIS MATTERS ─────────────────────────────────────────── */}
+      <section className="bg-white border-y border-gray-100">
+        <div className="max-w-5xl mx-auto px-5 py-16 sm:py-20">
+          <div className="max-w-2xl mx-auto text-center">
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">
+              {t('landing.whyTitle')}
+            </h2>
+            <p className="mt-3 text-gray-600 leading-relaxed">
+              {t('landing.whyBlurb')}
+            </p>
+          </div>
+          <div className="mt-12 grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
+            {[
+              { v: t('landing.whyStat1Value'), l: t('landing.whyStat1Label') },
+              { v: t('landing.whyStat2Value'), l: t('landing.whyStat2Label') },
+              { v: t('landing.whyStat3Value'), l: t('landing.whyStat3Label') },
+            ].map((s, i) => (
+              <div
+                key={i}
+                className="rounded-2xl bg-gradient-to-br from-green-50 to-stone-50 border border-green-100 p-6 text-center"
+              >
+                <div className="text-3xl sm:text-4xl font-bold text-green-700 tracking-tight">
+                  {s.v}
+                </div>
+                <div className="mt-2 text-sm text-gray-600 leading-snug">{s.l}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ─── CAPABILITIES ────────────────────────────────────────────── */}
+      <section className="bg-stone-50">
+        <div className="max-w-5xl mx-auto px-5 py-16 sm:py-20">
+          <div className="max-w-2xl mx-auto text-center">
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">
+              {t('landing.capabilitiesTitle')}
+            </h2>
+            <p className="mt-3 text-gray-600 leading-relaxed">
+              {t('landing.capabilitiesBlurb')}
+            </p>
+          </div>
+          <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-5">
+            {[
+              { Icon: CheckCircle2, t: t('landing.cap1Title'), b: t('landing.cap1Body'), href: '/dashboard', accent: 'bg-green-100 text-green-700' },
+              { Icon: MapPinned,    t: t('landing.cap2Title'), b: t('landing.cap2Body'), href: '/dashboard', accent: 'bg-blue-100 text-blue-700' },
+              { Icon: Sparkles,     t: t('landing.cap3Title'), b: t('landing.cap3Body'), href: '/reps',      accent: 'bg-purple-100 text-purple-700' },
+              { Icon: AlertTriangle,t: t('landing.cap4Title'), b: t('landing.cap4Body'), href: '/anomalies', accent: 'bg-amber-100 text-amber-700' },
+            ].map(({ Icon, t: title, b, href, accent }, i) => (
+              <Link
+                key={i}
+                href={href}
+                className="group rounded-2xl bg-white border border-gray-200 p-6 hover:border-green-400 hover:shadow-md transition-all"
+              >
+                <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${accent}`}>
+                  <Icon size={20} />
+                </div>
+                <h3 className="mt-4 text-lg font-bold text-gray-900">{title}</h3>
+                <p className="mt-2 text-sm text-gray-600 leading-relaxed">{b}</p>
+                <div className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-green-700 opacity-0 group-hover:opacity-100 transition-opacity">
+                  Explore <ArrowRight size={12} />
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ─── HOW IT WORKS ────────────────────────────────────────────── */}
+      <section className="bg-white border-y border-gray-100">
+        <div className="max-w-5xl mx-auto px-5 py-16 sm:py-20">
+          <div className="max-w-2xl mx-auto text-center">
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">
+              {t('landing.howTitle')}
+            </h2>
+            <p className="mt-3 text-gray-600 leading-relaxed">{t('landing.howBlurb')}</p>
+          </div>
+          <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-5 relative">
+            {/* Connecting dashed line on md+ */}
+            <div className="hidden md:block absolute top-12 left-[16%] right-[16%] h-0.5 border-t-2 border-dashed border-green-300 pointer-events-none" />
+            {[
+              { Icon: Database, n: 1, t: t('landing.howStep1Title'), b: t('landing.howStep1Body') },
+              { Icon: BrainCircuit, n: 2, t: t('landing.howStep2Title'), b: t('landing.howStep2Body') },
+              { Icon: Smartphone, n: 3, t: t('landing.howStep3Title'), b: t('landing.howStep3Body') },
+            ].map(({ Icon, n, t: title, b }, i) => (
+              <div key={i} className="relative bg-white">
+                <div className="w-12 h-12 mx-auto rounded-full bg-green-700 text-white flex items-center justify-center font-bold shadow-md shadow-green-700/20 relative z-10">
+                  {n}
+                </div>
+                <div className="mt-5 flex items-center justify-center gap-2 text-gray-800">
+                  <Icon size={16} className="text-green-700" />
+                  <h3 className="font-semibold">{title}</h3>
+                </div>
+                <p className="mt-2 text-sm text-gray-600 leading-relaxed text-center px-4">{b}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ─── FINAL CTA ────────────────────────────────────────────────── */}
+      <section className="bg-gradient-to-br from-green-700 via-green-700 to-emerald-700 text-white">
+        <div className="max-w-3xl mx-auto px-5 py-16 sm:py-20 text-center">
+          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">
+            {t('landing.finalCtaTitle')}
+          </h2>
+          <p className="mt-3 text-green-50 leading-relaxed">
+            {t('landing.finalCtaSubtitle')}
+          </p>
+          <Link
+            href="/dashboard"
+            className="mt-7 inline-flex items-center gap-2 px-7 py-3.5 rounded-xl bg-white text-green-800 font-semibold shadow-lg hover:bg-stone-50 transition-colors hover:-translate-y-0.5"
+          >
+            {t('landing.finalCtaButton')} <ArrowRight size={16} />
+          </Link>
+          <p className="mt-8 text-xs text-green-100/80 tracking-wider uppercase">
+            {t('landing.madeFor')}
+          </p>
+        </div>
+      </section>
+    </div>
+  );
 }

@@ -6,7 +6,7 @@ import { useLocale } from '@/lib/i18n/LocaleProvider';
 export default function OfflinePage() {
   const { t } = useLocale();
   return (
-    <div className="flex flex-col items-center justify-center min-h-[60vh] text-center space-y-4 px-4">
+    <div className="page-shell flex flex-col items-center justify-center min-h-[60vh] text-center space-y-4">
       <div className="w-16 h-16 rounded-full bg-amber-100 flex items-center justify-center">
         <WifiOff size={32} className="text-amber-500" />
       </div>
