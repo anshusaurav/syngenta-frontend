@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { getVisitPlan, getAnomalies, getRepStats, getRep, getWeather, VisitPlanItem, AnomalyFlag, RepStats, WeatherSummary, Rep } from '@/lib/api';
@@ -33,7 +33,7 @@ function formatCompact(n: number): string {
   return `${Math.round(n)}`;
 }
 
-export default function DashboardPage() {
+function DashboardInner() {
   const { t, setAutoLocale } = useLocale();
   const { repId, territoryId, setRep, hydrated } = useSelectedRep();
   const searchParams = useSearchParams();
@@ -257,5 +257,14 @@ export default function DashboardPage() {
         </section>
       )}
     </div>
+  );
+}
+
+// useSearchParams() requires a Suspense boundary during prerendering.
+export default function DashboardPage() {
+  return (
+    <Suspense fallback={<div className="page-shell"><div className="h-8 bg-gray-200 rounded animate-pulse w-48" /></div>}>
+      <DashboardInner />
+    </Suspense>
   );
 }
