@@ -16,42 +16,67 @@ export default function LandingPage() {
 
   return (
     <div className="font-display">
-      {/* ─── HERO ─────────────────────────────────────────────────────── */}
+      {/* ─── HERO ─── split layout: copy left, product mockup right ────── */}
       <section className="relative overflow-hidden bg-gradient-to-b from-green-50 via-white to-stone-50">
-        {/* Decorative blurred accents — saffron + brand */}
-        <div className="absolute -top-24 -right-24 w-96 h-96 rounded-full bg-saffron-100/60 blur-3xl"
-             style={{ background: 'radial-gradient(closest-side, rgba(249,115,22,0.18), transparent)' }} />
-        <div className="absolute -bottom-32 -left-24 w-[28rem] h-[28rem] rounded-full"
-             style={{ background: 'radial-gradient(closest-side, rgba(22,163,74,0.18), transparent)' }} />
+        {/* Decorative blurred accents */}
+        <div
+          className="absolute -top-24 -right-24 w-[28rem] h-[28rem] rounded-full pointer-events-none"
+          style={{ background: 'radial-gradient(closest-side, rgba(249,115,22,0.20), transparent)' }}
+        />
+        <div
+          className="absolute -bottom-32 -left-24 w-[32rem] h-[32rem] rounded-full pointer-events-none"
+          style={{ background: 'radial-gradient(closest-side, rgba(22,163,74,0.20), transparent)' }}
+        />
 
-        <div className="relative max-w-5xl mx-auto px-5 pt-14 pb-20 sm:pt-20 sm:pb-28">
-          <div className="flex flex-col items-center text-center max-w-3xl mx-auto animate-fade-up">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border border-green-200 text-xs font-semibold text-green-800 shadow-sm">
-              <Sprout size={13} /> {t('landing.heroEyebrow')}
-            </span>
-            <h1 className="mt-5 text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-gray-900 leading-[1.1]">
-              {t('landing.heroTitle')}
-            </h1>
-            <p className="mt-5 text-base sm:text-lg text-gray-600 leading-relaxed max-w-2xl">
-              {t('landing.heroSubtitle')}
-            </p>
-            <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-              <Link
-                href="/dashboard"
-                className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-green-700 text-white font-semibold shadow-lg shadow-green-700/20 hover:bg-green-800 transition-all hover:-translate-y-0.5"
-              >
-                {t('landing.ctaPrimary')} <ArrowRight size={16} />
-              </Link>
-              <Link
-                href="/reps"
-                className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-white text-gray-800 font-semibold border border-gray-200 hover:border-green-400 transition-colors"
-              >
-                {t('landing.ctaSecondary')}
-              </Link>
+        <div className="relative max-w-6xl mx-auto px-5 pt-16 pb-20 sm:pt-24 sm:pb-28">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-12 items-center">
+            {/* LEFT: eyebrow + headline + CTAs */}
+            <div className="animate-fade-up">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border border-green-200 text-xs font-semibold text-green-800 shadow-sm">
+                <Sprout size={13} /> {t('landing.heroEyebrow')}
+              </span>
+              <h1 className="mt-5 text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-gray-900 leading-[1.05]">
+                {t('landing.heroTitle')}
+              </h1>
+              <div className="mt-7 flex flex-wrap items-center gap-3">
+                <Link
+                  href="/dashboard"
+                  className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-green-700 text-white font-semibold shadow-lg shadow-green-700/20 hover:bg-green-800 transition-all hover:-translate-y-0.5"
+                >
+                  {t('landing.ctaPrimary')} <ArrowRight size={16} />
+                </Link>
+                <Link
+                  href="/reps"
+                  className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-white text-gray-800 font-semibold border border-gray-200 hover:border-green-400 transition-colors"
+                >
+                  {t('landing.ctaSecondary')}
+                </Link>
+              </div>
+              <p className="mt-6 text-xs text-gray-400 uppercase tracking-wider">
+                {t('landing.tagline')}
+              </p>
             </div>
-            <p className="mt-5 text-xs text-gray-400 uppercase tracking-wider">
-              {t('landing.tagline')}
-            </p>
+
+            {/* RIGHT: product mockup placeholder — uses the same Daily Plan
+                preview we generated for the PWA manifest screenshot. */}
+            <div className="relative flex justify-center md:justify-end">
+              {/* Soft glow behind the mockup */}
+              <div
+                className="absolute inset-0 rounded-[2rem] blur-2xl opacity-60"
+                style={{ background: 'radial-gradient(closest-side, rgba(22,163,74,0.25), transparent 70%)' }}
+              />
+              <div className="relative rounded-[1.5rem] bg-white border border-gray-200 shadow-2xl shadow-green-900/10 overflow-hidden w-full max-w-[340px]">
+                {/* Phone-bezel hint */}
+                <div className="h-6 bg-gray-50 flex items-center justify-center border-b border-gray-100">
+                  <span className="w-10 h-1 rounded-full bg-gray-300" />
+                </div>
+                <img
+                  src="/screenshot-mobile.png"
+                  alt="Field Co-Pilot daily visit plan on mobile"
+                  className="block w-full h-auto"
+                />
+              </div>
+            </div>
           </div>
         </div>
       </section>
