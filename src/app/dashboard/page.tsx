@@ -4,8 +4,7 @@ import { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { getVisitPlan, getAnomalies, getRepStats, getRep, getWeather, VisitPlanItem, AnomalyFlag, RepStats, WeatherSummary, Rep } from '@/lib/api';
 import VisitPlanCard from '@/components/VisitPlanCard';
-import AnomalySummaryBanner from '@/components/AnomalySummaryBanner';
-import WeatherStrip from '@/components/WeatherStrip';
+import CompactSnapshot from '@/components/CompactSnapshot';
 import RepSelector from '@/components/RepSelector';
 import StatCard from '@/components/StatCard';
 import { RefreshCw, List, Map as MapIcon } from 'lucide-react';
@@ -140,8 +139,9 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* ─── Weather strip — context for the day ────────────────────── */}
-      {weather && <WeatherStrip weather={weather} />}
+      {/* ─── Today snapshot — weather + alert chips, dense, out of the
+            main flow so the visit plan stays the hero. ───────────────── */}
+      <CompactSnapshot weather={weather} anomalies={anomalies} />
 
       {/* ─── Visit plan (HERO) — map by default, list opt-in ────────── */}
       <section>
@@ -206,14 +206,11 @@ export default function DashboardPage() {
         )}
       </section>
 
-      {/* ─── Anomaly banner — actionable summary, just under the plan ─ */}
-      {anomalies.length > 0 && <AnomalySummaryBanner anomalies={anomalies} />}
-
       {/* ─── KPI strip — below the work, summary view ───────────────── */}
       {stats && (
         <section>
-          <h3 className="font-display text-sm font-semibold text-gray-600 uppercase tracking-wider mb-2">
-            {t('dashboard.stats.thirtyDays')}
+          <h3 className="font-display text-sm font-semibold text-gray-600 uppercase tracking-wider mb-3">
+            {t('dashboard.performanceHeader')}
           </h3>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
             <StatCard label={t('dashboard.stats.visitsThisWeek')} value={stats.visits_this_week} />

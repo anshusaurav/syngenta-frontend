@@ -60,6 +60,10 @@ const en = {
   dashboard: {
     title: 'Daily Visit Plan',
     error: 'Could not reach backend. Showing cached data if available.',
+    todayHeader: 'Today',
+    performanceHeader: 'Performance · last 30 days',
+    snapshotAlertChip: '{count} alert · {high} high',
+    snapshotAlertChipPlural: '{count} alerts · {high} high',
     recommendedVisits: 'Recommended Visits',
     urgentTag: '{count} urgent',
     highTag: '{count} high',
@@ -107,6 +111,10 @@ const en = {
     noAlerts: 'No alerts',
     alertsCount: '{count} alert',
     alertsCountPlural: '{count} alerts',
+    metricLastVisit: 'Last visit',
+    metricStock: 'Stock',
+    metricSales30d: '30d sales',
+    metricAlerts: 'Alerts',
   },
   weather: {
     pestRiskHigh: 'High pest risk',

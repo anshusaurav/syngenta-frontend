@@ -96,27 +96,41 @@ export default function VisitPlanCard({
           </div>
         )}
 
-        {/* Stats row */}
-        <div className="grid grid-cols-4 gap-2 mt-3 text-xs text-gray-600">
-          <div className="flex items-center gap-1">
-            <Clock size={11} className="text-gray-400" /> {daysLabel}
+        {/* Stats — labelled metric blocks. 2-col on mobile, 4-col on wide. */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-3">
+          <div className="bg-gray-50 rounded-md px-2 py-1.5">
+            <div className="flex items-center gap-1 text-[10px] uppercase tracking-wider text-gray-500 font-semibold">
+              <Clock size={10} /> {t('visitCard.metricLastVisit')}
+            </div>
+            <div className="text-xs font-medium text-gray-800 mt-0.5">{daysLabel}</div>
           </div>
-          <div className="flex items-center gap-1">
-            <Package size={11} className={sb.stock_out_count > 0 ? 'text-red-500' : 'text-gray-400'} />
-            {sb.stock_out_count > 0
-              ? <span className="text-red-600 font-medium">{t('visitCard.outOfStock', { count: sb.stock_out_count })}</span>
-              : t('visitCard.inStock')}
+          <div className="bg-gray-50 rounded-md px-2 py-1.5">
+            <div className="flex items-center gap-1 text-[10px] uppercase tracking-wider text-gray-500 font-semibold">
+              <Package size={10} className={sb.stock_out_count > 0 ? 'text-red-500' : ''} /> {t('visitCard.metricStock')}
+            </div>
+            <div className={`text-xs font-medium mt-0.5 ${sb.stock_out_count > 0 ? 'text-red-600' : 'text-gray-800'}`}>
+              {sb.stock_out_count > 0
+                ? t('visitCard.outOfStock', { count: sb.stock_out_count })
+                : t('visitCard.inStock')}
+            </div>
           </div>
-          <div className="flex items-center gap-1">
-            <TrendingUp size={11} className="text-gray-400" /> {t('visitCard.unitsShort', { n: sb.sales_velocity_30d })}
+          <div className="bg-gray-50 rounded-md px-2 py-1.5">
+            <div className="flex items-center gap-1 text-[10px] uppercase tracking-wider text-gray-500 font-semibold">
+              <TrendingUp size={10} /> {t('visitCard.metricSales30d')}
+            </div>
+            <div className="text-xs font-medium text-gray-800 mt-0.5">
+              {t('visitCard.unitsShort', { n: sb.sales_velocity_30d })}
+            </div>
           </div>
-          <div className="flex items-center gap-1">
-            <AlertTriangle size={11} className={sb.anomaly_count > 0 ? 'text-red-400' : 'text-gray-300'} />
-            {sb.anomaly_count > 0
-              ? <span className="text-red-600 font-medium">
-                  {t(sb.anomaly_count === 1 ? 'visitCard.alertsCount' : 'visitCard.alertsCountPlural', { count: sb.anomaly_count })}
-                </span>
-              : t('visitCard.noAlerts')}
+          <div className="bg-gray-50 rounded-md px-2 py-1.5">
+            <div className="flex items-center gap-1 text-[10px] uppercase tracking-wider text-gray-500 font-semibold">
+              <AlertTriangle size={10} className={sb.anomaly_count > 0 ? 'text-red-500' : ''} /> {t('visitCard.metricAlerts')}
+            </div>
+            <div className={`text-xs font-medium mt-0.5 ${sb.anomaly_count > 0 ? 'text-red-600' : 'text-gray-800'}`}>
+              {sb.anomaly_count > 0
+                ? t(sb.anomaly_count === 1 ? 'visitCard.alertsCount' : 'visitCard.alertsCountPlural', { count: sb.anomaly_count })
+                : t('visitCard.noAlerts')}
+            </div>
           </div>
         </div>
 

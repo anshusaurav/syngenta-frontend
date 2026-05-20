@@ -62,6 +62,10 @@ const hi: Dict = {
   dashboard: {
     title: 'आज की विज़िट योजना',
     error: 'सर्वर से कनेक्ट नहीं हो सका। उपलब्ध होने पर कैश्ड डेटा दिखाया जा रहा है।',
+    todayHeader: 'आज',
+    performanceHeader: 'प्रदर्शन · पिछले 30 दिन',
+    snapshotAlertChip: '{count} अलर्ट · {high} उच्च',
+    snapshotAlertChipPlural: '{count} अलर्ट · {high} उच्च',
     recommendedVisits: 'अनुशंसित विज़िट',
     urgentTag: '{count} अति-आवश्यक',
     highTag: '{count} उच्च',
@@ -109,6 +113,10 @@ const hi: Dict = {
     noAlerts: 'कोई अलर्ट नहीं',
     alertsCount: '{count} अलर्ट',
     alertsCountPlural: '{count} अलर्ट',
+    metricLastVisit: 'पिछली विज़िट',
+    metricStock: 'स्टॉक',
+    metricSales30d: '30 दिन बिक्री',
+    metricAlerts: 'अलर्ट',
   },
   weather: {
     pestRiskHigh: 'उच्च कीट जोखिम',
