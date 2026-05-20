@@ -87,7 +87,7 @@ export default function VisitPlanCard({
   return (
     <Link href={`/retailer/${item.retailer_id}?repId=${repId}`}>
       <div
-        className={`relative overflow-hidden bg-white border rounded-xl p-4 cursor-pointer shadow-sm hover:shadow-md hover:-translate-y-px transition-all ${priorityCardStyle[item.priority]}`}
+        className={`relative z-0 hover:z-10 overflow-hidden bg-white border rounded-xl p-4 cursor-pointer shadow-sm hover:shadow-md transition-shadow ${priorityCardStyle[item.priority]}`}
       >
         {/* Thin top accent bar (only for urgent/high) — sits flush with rounded corners. */}
         {priorityAccent[item.priority] && (
