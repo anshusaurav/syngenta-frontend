@@ -92,7 +92,11 @@ export default function RepsPage() {
       if (!map.has(key)) map.set(key, []);
       map.get(key)!.push(r);
     }
-    const cap = stateFilter === 'all' ? 24 : Infinity; // no cap when state-filtered
+    // Per-state cap only applies in "All states" mode AND when there's no
+    // active search. When a user types a query, every match must be visible
+    // — otherwise searching for a rep that sits past position 24 in its
+    // state silently returns "no result" even though the rep matched.
+    const cap = stateFilter === 'all' && !q ? 24 : Infinity;
     const groups = Array.from(map.entries())
       .map(([state, reps]) => ({ state, reps: cap === Infinity ? reps : reps.slice(0, cap) }))
       .sort((a, b) => a.state.localeCompare(b.state));
