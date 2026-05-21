@@ -7,16 +7,25 @@ import { useLocale } from '@/lib/i18n/LocaleProvider';
 import { useSelectedRep } from '@/lib/useSelectedRep';
 import RepSelector from '@/components/RepSelector';
 
-const severityStyle: Record<string, string> = {
-  high: 'border-l-red-500 bg-red-50',
-  medium: 'border-l-amber-500 bg-amber-50',
-  low: 'border-l-yellow-400 bg-yellow-50',
+// Clean card pattern (mirrors VisitPlanCard) — white body, thin grey border,
+// soft severity-tinted ring, flush top accent bar. No left ribbon, no bg
+// tint, no broken corners.
+const severityCardStyle: Record<string, string> = {
+  high:   'border-gray-200 ring-1 ring-red-100',
+  medium: 'border-gray-200 ring-1 ring-amber-100',
+  low:    'border-gray-200',
+};
+
+const severityAccent: Record<string, string> = {
+  high:   'bg-red-500',
+  medium: 'bg-amber-400',
+  low:    '',
 };
 
 const severityBadge: Record<string, string> = {
-  high: 'bg-red-100 text-red-700',
+  high:   'bg-red-100 text-red-700',
   medium: 'bg-amber-100 text-amber-700',
-  low: 'bg-yellow-100 text-yellow-700',
+  low:    'bg-yellow-100 text-yellow-700',
 };
 
 const filterKeys: Record<string, string> = {
@@ -136,7 +145,15 @@ export default function AnomaliesPage() {
       ) : (
         <div className="space-y-4">
           {anomalies.map(a => (
-            <div key={a._id} className={`border-l-4 rounded-lg p-3 ${severityStyle[a.severity]} flex items-start justify-between gap-3`}>
+            <div
+              key={a._id}
+              className={`relative z-0 hover:z-10 overflow-hidden bg-white border rounded-xl p-3 shadow-sm hover:shadow-md transition-shadow flex items-start justify-between gap-3 ${severityCardStyle[a.severity]}`}
+            >
+              {/* Thin top accent bar (only for high/medium severity) — sits
+                  flush with the rounded corners thanks to overflow-hidden. */}
+              {severityAccent[a.severity] && (
+                <div className={`absolute inset-x-0 top-0 h-1 ${severityAccent[a.severity]}`} />
+              )}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
                   <span className="text-xs font-medium text-gray-700">{t(`anomalies.typeLong.${a.anomaly_type}`)}</span>
